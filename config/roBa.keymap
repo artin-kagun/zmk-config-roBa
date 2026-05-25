@@ -1,7 +1,38 @@
 #include <behaviors.dtsi>
+#include <input/processors.dtsi>
 #include <dt-bindings/zmk/bt.h>
 #include <dt-bindings/zmk/keys.h>
 #include <dt-bindings/zmk/pointing.h>
+
+#define MOUSE 4
+
+// Use US HID keycodes that produce these symbols with macOS set to Japanese JIS.
+#define JP_DQUOTE       AT
+#define JP_AMPERSAND    CARET
+#define JP_QUOTE        AMPERSAND
+#define JP_EQUAL        UNDER
+#define JP_CARET        EQUAL
+#define JP_BACKSLASH    LA(INT_YEN)
+#define JP_PLUS         COLON
+#define JP_TILDE        PLUS
+#define JP_PIPE         LS(INT_YEN)
+#define JP_AT           LEFT_BRACKET
+#define JP_COLON        SINGLE_QUOTE
+#define JP_ASTERISK     DOUBLE_QUOTES
+#define JP_BACKQUOTE    LEFT_BRACE
+#define JP_UNDERSCORE   LS(INT_RO)
+#define JP_QUESTION     LS(SLASH)
+#define JP_LBRACKET     RIGHT_BRACKET
+#define JP_RBRACKET     BACKSLASH
+#define JP_LPAREN       ASTERISK
+#define JP_RPAREN       LEFT_PARENTHESIS
+#define JP_LT           LS(COMMA)
+#define JP_GT           LS(DOT)
+#define JP_LBRACE       RIGHT_BRACE
+#define JP_RBRACE       PIPE
+#define JP_KANA         LANGUAGE_1
+#define JP_EISU         LANGUAGE_2
+#define JP_HANZEN       GRAVE
 
 &mt {
     flavor = "balanced";
@@ -9,7 +40,6 @@
 };
 
 &trackball {
-    automouse-layer = <4>;
     scroll-layers = <5>;
 
     // arrows {
@@ -24,6 +54,30 @@
     //     wait-ms = <5>;
     //     tap-ms = <5>;
     // };
+};
+
+&zip_temp_layer {
+    require-prior-idle-ms = <200>;
+    excluded-positions = <
+        5  // Y / forward
+        6  // U / MB1
+        7  // I / MB3
+        8  // O / MB2
+        17 // H / back
+        18 // J / MB1
+        19 // K / MB3
+        20 // L / MB2
+        22 // Shift / Z
+        34 // Ctrl
+    >;
+};
+
+&trackball_listener {
+    input-processors = <&zip_temp_layer MOUSE 100000>;
+};
+
+&mkp_input_listener {
+    input-processors = <&zip_temp_layer MOUSE 250>;
 };
 
 / {
@@ -46,17 +100,35 @@
         };
 
         double_quotation {
-            bindings = <&kp DOUBLE_QUOTES>;
+            bindings = <&kp JP_DQUOTE>;
             key-positions = <20 21>;
         };
 
         eq {
-            bindings = <&kp EQUAL>;
+            bindings = <&kp JP_EQUAL>;
             key-positions = <24 25>;
         };
     };
 
     macros {
+        exit_AML: exit_AML {
+            compatible = "zmk,behavior-macro";
+            wait-ms = <0>;
+            tap-ms = <0>;
+            #binding-cells = <0>;
+            bindings = <&tog_off MOUSE>;
+            label = "exit_AML";
+        };
+
+        kp_exit_AML: kp_exit_AML {
+            compatible = "zmk,behavior-macro-one-param";
+            wait-ms = <0>;
+            tap-ms = <0>;
+            #binding-cells = <1>;
+            bindings = <&macro_param_1to1 &kp MACRO_PLACEHOLDER &exit_AML>;
+            label = "KP_exit_AML";
+        };
+
         to_layer_0: to_layer_0 {
             compatible = "zmk,behavior-macro-one-param";
             #binding-cells = <1>;
@@ -66,6 +138,23 @@
     };
 
     behaviors {
+        tog_off: toggle_layer_off {
+            compatible = "zmk,behavior-toggle-layer";
+            #binding-cells = <1>;
+            display-name = "Toggle Layer Off";
+            toggle-mode = "off";
+        };
+
+        mt_exit_AML_on_tap: mt_exit_AML_on_tap {
+            compatible = "zmk,behavior-hold-tap";
+            label = "MT_exit_AML_ON_TAP";
+            bindings = <&kp>, <&kp_exit_AML>;
+            #binding-cells = <2>;
+            tapping-term-ms = <200>;
+            flavor = "balanced";
+            quick-tap-ms = <200>;
+        };
+
         lt_to_layer_0: lt_to_layer_0 {
             compatible = "zmk,behavior-hold-tap";
             label = "LAYER_TAP_TO_0";
@@ -82,9 +171,9 @@
         default_layer {
             bindings = <
 &kp Q             &kp W         &kp E         &kp R                        &kp T                                                          &kp Y        &kp U  &lt 5 I    &kp O    &kp P
-&kp A             &kp S         &kp D         &kp F                        &kp G        &kp LS(LG(S))                      &kp MINUS      &kp H        &kp J  &kp K      &kp L    &kp SQT
-&mt LEFT_SHIFT Z  &kp X         &kp C         &kp V                        &kp B        &kp COLON                          &kp SEMICOLON  &kp N        &kp M  &kp COMMA  &kp DOT  &kp SLASH
-&kp LCTRL         &kp LEFT_WIN  &kp LEFT_ALT  &lt_to_layer_0 6 INT_HENKAN  &lt 2 SPACE  &lt_to_layer_0 3 INT_MUHENKAN      &kp BACKSPACE  &lt 1 ENTER                             &kp DEL
+&kp A             &kp S         &kp D         &kp F                        &kp G        &kp TAB                            &kp MINUS      &kp H        &kp J  &kp K      &kp L    &kp JP_QUESTION
+&mt_exit_AML_on_tap LEFT_SHIFT Z  &kp X         &kp C         &kp V                        &kp B        &kp JP_COLON                       &lt 2 SLASH   &kp N        &kp M  &kp COMMA  &kp DOT  &kp BACKSPACE
+&kp LCTRL         &kp LEFT_WIN  &kp LEFT_ALT  &lt_to_layer_0 6 INT_MUHENKAN  &lt 2 SPACE  &lt_to_layer_0 3 INT_HENKAN      &kp LEFT_WIN   &lt 1 ENTER                             &kp ESCAPE
             >;
 
             sensor-bindings = <&inc_dec_kp PG_UP PAGE_DOWN>;
@@ -101,18 +190,18 @@
 
         NUM {
             bindings = <
-&kp MINUS                   &kp KP_NUMBER_7  &kp KP_NUMBER_8  &kp KP_NUMBER_9  &kp PLUS                                                   &kp CARET         &kp AMPERSAND      &kp TILDE       &kp LEFT_PARENTHESIS  &kp RIGHT_PARENTHESIS
-&kp SLASH                   &kp KP_NUMBER_4  &kp KP_NUMBER_5  &kp KP_NUMBER_6  &kp ASTERISK  &kp LC(LA(KP_NUMBER_0))      &kp UNDERSCORE  &kp EXCLAMATION   &kp AT_SIGN        &kp HASH        &kp DOLLAR            &kp PERCENT
-&mt LEFT_SHIFT KP_NUMBER_0  &kp KP_NUMBER_1  &kp KP_NUMBER_2  &kp KP_NUMBER_3  &kp PERIOD    &kp EQUAL                    &trans          &kp LEFT_BRACKET  &kp RIGHT_BRACKET  &kp LEFT_BRACE  &kp RIGHT_BRACE       &kp BACKSLASH
-&trans                      &trans           &trans           &trans           &trans        &trans                       &trans          &trans                                                                     &kp PIPE
+&kp KP_NUMBER_1             &kp KP_NUMBER_2  &kp KP_NUMBER_3  &kp KP_NUMBER_4  &kp KP_NUMBER_5                                          &kp JP_CARET      &kp JP_PLUS        &kp JP_LPAREN    &kp JP_RPAREN        &kp JP_EQUAL
+&kp SEMICOLON               &kp JP_COLON     &kp JP_QUOTE     &kp JP_DQUOTE    &kp JP_BACKQUOTE  &kp LC(LA(KP_NUMBER_0))   &kp JP_UNDERSCORE  &kp EXCLAMATION   &kp MINUS      &kp JP_LBRACE    &kp JP_RBRACE       &kp PERCENT
+&kp KP_NUMBER_6             &kp KP_NUMBER_7  &kp KP_NUMBER_8  &kp KP_NUMBER_9  &kp KP_NUMBER_0   &kp JP_TILDE          &kp JP_LT          &kp JP_GT      &kp JP_ASTERISK  &kp JP_LBRACKET  &kp JP_RBRACKET     &kp SLASH
+&kp JP_AT                   &kp JP_AMPERSAND &kp HASH         &trans           &trans           &trans                    &kp DOLLAR         &kp JP_BACKSLASH                       &kp JP_PIPE
             >;
         };
 
         ARROW {
             bindings = <
-&kp ESCAPE      &kp LC(LS(TAB))         &kp UP_ARROW    &kp LC(TAB)              &trans                       &trans  &trans  &trans  &trans  &trans
-&kp HOME        &kp LEFT_ARROW          &kp DOWN_ARROW  &kp RIGHT_ARROW          &kp END  &trans      &trans  &trans  &trans  &trans  &trans  &trans
-&kp LEFT_SHIFT  &kp LG(LS(LEFT_ARROW))  &trans          &kp LG(LS(RIGHT_ARROW))  &trans   &trans      &trans  &trans  &trans  &trans  &trans  &trans
+&lt 5 ESCAPE    &kp LC(LS(TAB))         &kp UP_ARROW    &kp LC(TAB)              &trans                       &kp LG(LC(LS(NUMBER_4)))  &trans           &trans  &trans  &trans
+&kp HOME        &kp LEFT_ARROW          &kp DOWN_ARROW  &kp RIGHT_ARROW          &kp END  &trans      &kp C_VOLUME_UP  &trans           &trans  &trans  &trans  &trans
+&kp LEFT_SHIFT  &kp LG(LS(LEFT_ARROW))  &trans          &kp LG(LS(RIGHT_ARROW))  &trans   &trans      &kp C_VOLUME_DOWN  &trans  &trans  &trans  &trans  &trans
 &trans          &trans                  &trans          &trans                   &trans   &trans      &trans  &trans                          &trans
             >;
 
@@ -121,8 +210,8 @@
 
         MOUSE {
             bindings = <
-&trans  &trans  &trans  &trans  &trans                      &trans  &trans    &trans    &trans    &trans
-&trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &mkp MB1  &mkp MB3  &mkp MB2  &trans
+&trans  &trans  &trans  &trans  &trans                      &mkp MB5  &mkp MB1  &mkp MB3  &mkp MB2  &trans
+&trans  &trans  &trans  &trans  &trans  &trans      &trans  &mkp MB4  &mkp MB1  &mkp MB3  &mkp MB2  &trans
 &trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans  &trans    &trans    &trans    &trans
 &trans  &trans  &trans  &trans  &trans  &trans      &trans  &trans                                &trans
             >;
@@ -140,8 +229,8 @@
         layer_6 {
             bindings = <
 &trans  &trans        &trans        &trans        &trans                           &bt BT_SEL 0  &bt BT_SEL 1  &bt BT_SEL 2  &bt BT_SEL 3  &bt BT_SEL 4
-&trans  &trans        &trans        &trans        &trans  &trans      &trans       &trans        &trans        &trans        &trans        &trans
-&trans  &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3  &trans  &trans      &bootloader  &trans        &trans        &trans        &trans        &bt BT_CLR
+&trans  &trans        &trans        &trans        &trans  &kp LC(LG(Q))      &trans       &trans        &trans        &trans        &trans        &trans
+&trans  &kp NUMBER_1  &kp NUMBER_2  &kp NUMBER_3  &trans  &trans            &bootloader  &trans        &trans        &trans        &trans        &bt BT_CLR
 &trans  &trans        &trans        &trans        &trans  &trans      &trans       &trans                                                  &bt BT_CLR_ALL
             >;
         };

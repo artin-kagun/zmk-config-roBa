@@ -5,6 +5,7 @@
 #include <dt-bindings/zmk/pointing.h>
 
 #define MOUSE 4
+#define SCROLL 5
 
 // Use US HID keycodes that produce these symbols with macOS set to Japanese JIS.
 #define JP_DQUOTE       AT
@@ -40,8 +41,6 @@
 };
 
 &trackball {
-    scroll-layers = <5>;
-
     // arrows {
     //     layers = <3>;
     //     bindings =
@@ -57,7 +56,7 @@
 };
 
 &zip_temp_layer {
-    require-prior-idle-ms = <200>;
+    require-prior-idle-ms = <700>;
     excluded-positions = <
         5  // Y / forward
         6  // U / MB1
@@ -73,6 +72,11 @@
 };
 
 &trackball_listener {
+    scroller {
+        layers = <SCROLL>;
+        input-processors = <&zip_xy_to_scroll_mapper>;
+    };
+
     input-processors = <&zip_temp_layer MOUSE 100000>;
 };
 
@@ -173,7 +177,7 @@
 &kp Q             &kp W         &kp E         &kp R                        &kp T                                                          &kp Y        &kp U  &lt 5 I    &kp O    &kp P
 &kp A             &kp S         &kp D         &kp F                        &kp G        &kp TAB                            &kp MINUS      &kp H        &kp J  &kp K      &kp L    &kp JP_QUESTION
 &mt_exit_AML_on_tap LEFT_SHIFT Z  &kp X         &kp C         &kp V                        &kp B        &kp JP_COLON                       &lt 2 SLASH   &kp N        &kp M  &kp COMMA  &kp DOT  &kp BACKSPACE
-&kp LCTRL         &kp LEFT_WIN  &kp LEFT_ALT  &lt_to_layer_0 6 INT_MUHENKAN  &lt 2 SPACE  &lt_to_layer_0 3 INT_HENKAN      &kp LEFT_WIN   &lt 1 ENTER                             &kp ESCAPE
+&kp LCTRL         &kp LEFT_WIN  &kp LEFT_ALT  &lt_to_layer_0 6 INT_MUHENKAN  &lt 2 SPACE  &lt_to_layer_0 3 INT_HENKAN      &kp LEFT_WIN   &lt 1 ENTER                             &lt 5 ESCAPE
             >;
 
             sensor-bindings = <&inc_dec_kp PG_UP PAGE_DOWN>;
@@ -199,7 +203,7 @@
 
         ARROW {
             bindings = <
-&lt 5 ESCAPE    &kp LC(LS(TAB))         &kp UP_ARROW    &kp LC(TAB)              &trans                       &kp LG(LC(LS(NUMBER_4)))  &trans           &trans  &trans  &trans
+&kp ESCAPE      &kp LC(LS(TAB))         &kp UP_ARROW    &kp LC(TAB)              &trans                       &kp LG(LC(LS(NUMBER_4)))  &trans           &trans  &trans  &trans
 &kp HOME        &kp LEFT_ARROW          &kp DOWN_ARROW  &kp RIGHT_ARROW          &kp END  &trans      &kp C_VOLUME_UP  &trans           &trans  &trans  &trans  &trans
 &kp LEFT_SHIFT  &kp LG(LS(LEFT_ARROW))  &trans          &kp LG(LS(RIGHT_ARROW))  &trans   &trans      &kp C_VOLUME_DOWN  &trans  &trans  &trans  &trans  &trans
 &trans          &trans                  &trans          &trans                   &trans   &trans      &trans  &trans                          &trans

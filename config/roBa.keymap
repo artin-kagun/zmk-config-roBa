@@ -74,10 +74,10 @@
 &trackball_listener {
     scroller {
         layers = <SCROLL>;
-        input-processors = <&zip_xy_to_scroll_mapper &zip_scroll_scaler 1 8>;
+        input-processors = <&zip_xy_to_scroll_mapper &zip_scroll_scaler 1 24>;
     };
 
-    input-processors = <&zip_temp_layer MOUSE 100000>;
+    input-processors = <&zip_temp_layer MOUSE 100000 &zip_xy_scaler 1 2>;
 };
 
 &mkp_input_listener {
